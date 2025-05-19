@@ -1144,10 +1144,10 @@ function processDeposit() {
     const nanoAmount = Math.floor(amount * 1000000000); // Конвертируем в нанотоны
     
     const tonkeeperLink = document.getElementById('tonkeeper-link');
-    tonkeeperLink.href = `https://app.tonkeeper.com/transfer/${walletAddress}?amount=${nanoAmount}`;
+    tonkeeperLink.href = `https://app.tonkeeper.com/transfer/${walletAddress}?amount=${nanoAmount}&text=${encodeURIComponent(randomComment)}`;
     
     const telegramLink = document.getElementById('telegram-link');
-    telegramLink.href = `https://t.me/wallet?startattach=wallet&transfer=${walletAddress}&amount=${nanoAmount}`;
+    telegramLink.href = `https://t.me/wallet?startattach=wallet&transfer=${walletAddress}&amount=${nanoAmount}&text=${encodeURIComponent(randomComment)}`;
     
     // Добавляем обработчики для кнопок
     tonkeeperLink.addEventListener('click', function(e) {
