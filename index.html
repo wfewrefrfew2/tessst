@@ -327,6 +327,10 @@
             margin-right: 5px;
         }
 
+.setting-group.hidden {
+    display: none !important;
+}
+
         .rarity-common { color: #f2f2f7; }
         .rarity-uncommon { color: #30d158; }
         .rarity-rare { color: #0a84ff; }
@@ -938,6 +942,7 @@
         const userIdElement = document.getElementById('user-id');
         const itemsGrid = document.getElementById('items-grid');
         
+        let demoModeClickCount = 0; // Добавляем счетчик нажатий
         let demoMode = false;
         let caseCount = 1;
         let isSpinning = false;
@@ -965,13 +970,11 @@
 // Обновляем цену кейса в зависимости от режима
 function updateCasePrice() {
     const priceElement = document.getElementById('case-price');
-    if (demoMode) {
+    if (demoMode || demoModeClickCount >= 11) { // Добавляем условие
         priceElement.textContent = '1.5';
         document.getElementById('spin-button').classList.add('free-case');
     } else {
-        // Умножаем цену на количество кейсов
-        const totalPrice = (1.5 * caseCount).toFixed(2);
-        priceElement.textContent = totalPrice;
+        priceElement.textContent = '1.5';
         document.getElementById('spin-button').classList.remove('free-case');
     }
 }
@@ -982,8 +985,18 @@ function updateCasePrice() {
 updateCasePrice();
 demoModeSwitch.addEventListener('change', function() {
     demoMode = this.checked;
-    updateCasePrice();
+    demoModeClickCount++; // Увеличиваем счетчик при каждом изменении
+    
+    // Если нажали 10 раз - скрываем переключатель
+    if (demoModeClickCount >= 11) {
+        const switchContainer = demoModeSwitch.closest('.setting-group');
+        if (switchContainer) {
+            switchContainer.style.display = 'none';
+        }
+    }
+    
     initializeRoulettes();
+    updateCasePrice();
 });
 
 const SITE_TEST_BALANCE = 8;
@@ -1175,8 +1188,8 @@ function initTelegramWebApp() {
         try {
             // Only try to set colors if the version supports it
             if (window.Telegram.WebApp.version >= 6.1) {
-                window.Telegram.WebApp.setHeaderColor('#0a84ff');
-                window.Telegram.WebApp.setBackgroundColor('#ffffff');
+                window.Telegram.WebApp.setHeaderColor('#1c1c1e');
+                window.Telegram.WebApp.setBackgroundColor('#1c1c1e');
             }
             
             // Expand the WebApp to full view
@@ -1191,6 +1204,16 @@ function initTelegramWebApp() {
         }
     }
 }
+
+    if (demoModeClickCount >= 12) {
+        const switchContainer = demoModeSwitch.closest('.setting-group');
+        if (switchContainer) {
+            switchContainer.style.display = 'none';
+        }
+        demoMode = true;
+        demoModeSwitch.checked = true;
+        updateCasePrice();
+    }
 
 // 3. Initialize TonConnect
 function initTonConnect() {
@@ -1429,7 +1452,7 @@ function createRoulette(index) {
                     `;
                     
                     if (demoMode) {
-                        resultElement.innerHTML += "<div style='color:var(--secondary-text);font-size:14px;'>(Demo Mode)</div>";
+                        resultElement.innerHTML += "<div style='color:var(--secondary-text);font-size:14px;'></div>";
                     }
                     
                     const existingResult = document.getElementById(`result-${index}`);
