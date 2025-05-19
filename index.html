@@ -1,0 +1,1727 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>rungift</title>
+    <script src="dragscroll.js"></script>
+    <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --bg-color: #1c1c1e;
+            --card-color: #1c1c1e;
+            --text-color: #f2f2f7;
+            --secondary-text: #8e8e93;
+            --accent-color: #0a84ff;
+            --border-radius: 14px;
+            --item-bg-color: #242424;
+            --border-color: #2e2e2e;
+            --tabbar-height: 70px;
+        }
+
+        
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px 20px calc(20px + var(--tabbar-height));
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+            touch-action: pan-y;
+            
+            -webkit-text-size-adjust: 100%;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .card {
+            background-color: var(--card-color);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+
+.button-price {
+    transition: all 0.3s ease; /* РџР»Р°РІРЅРѕРµ РёР·РјРµРЅРµРЅРёРµ С†РµРЅС‹ */
+}
+
+        h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin: 0 0 10px 0;
+            color: var(--text-color);
+        }
+
+        .subtitle {
+            color: var(--secondary-text);
+            font-size: 16px;
+            margin: 0 0 10px 0;
+            margin-bottom: 20px;
+        }
+
+        .roulette-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .roulette-wrapper {
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .roulette-border {
+            position: relative;
+            height: 120px;
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius);
+            background-color: var(--card-color);
+        }
+
+        .roulette-center {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background-color: var(--accent-color);
+            transform: translateX(-50%);
+            z-index: 2;
+        }
+
+        .roulette-wheel {
+            display: flex;
+            position: absolute;
+            top: 10px;
+            left: 0;
+            height: 100px;
+            align-items: center;
+        }
+
+        .case-item {
+            width: 100px;
+            height: 100px;
+            margin: 0 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--item-bg-color);
+            border-radius: 10px;
+            flex-shrink: 0;
+            transition: transform 0.3s;
+        }
+
+        .case-item.selected {
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(10, 132, 255, 0.5);
+        }
+
+        .case-item img {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+            filter: brightness(0.9);
+        }
+
+        .case-item p {
+            margin: 5px 0 0;
+            font-size: 12px;
+            font-weight: 500;
+            white-space: nowrap;
+            color: var(--text-color);
+        }
+
+.button-with-price {
+    position: relative;
+    padding-left: 50px;
+}
+
+.balance-display {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.ton-icon {
+    width: 20px;
+    height: 20px;
+}
+
+.deposit-button {
+    background: #0a84ff;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.deposit-button:hover {
+    background: #0066cc;
+}
+
+/* РЎС‚РёР»Рё РґР»СЏ РјРѕРґР°Р»СЊРЅРѕРіРѕ РѕРєРЅР° */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: #1e1e1e;
+    padding: 20px;
+    border-radius: 12px;
+    max-width: 400px;
+    width: 100%;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.modal-buttons button {
+    flex: 1;
+    padding: 8px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+#cancel-deposit {
+    background: #444;
+    color: white;
+}
+
+#confirm-deposit {
+    background: #0a84ff;
+    color: white;
+}
+
+#deposit-amount {
+    width: 100%;
+    padding: 8px;
+    margin-top: 10px;
+    border-radius: 6px;
+    border: 1px solid #444;
+    background: #2a2a2a;
+    color: white;
+}
+
+.button-price {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.button-price img {
+    width: 16px;
+    height: 16px;
+    margin-right: 4px;
+}
+
+
+        .item-price {
+            display: flex;
+            align-items: center;
+            margin-top: 3px;
+            font-size: 11px;
+            color: #ffffff;
+        }
+
+        .item-price img {
+            width: 12px;
+            height: 12px;
+            margin-right: 3px;
+        }
+
+        .button {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            padding: 12px 24px;
+            font-size: 17px;
+            font-weight: 500;
+            cursor: pointer;
+            width: 100%;
+            transition: opacity 0.2s, background-color 0.2s;
+        }
+
+        .button:hover {
+            opacity: 0.9;
+            background-color: #1a8cff;
+        }
+
+        .button:active {
+            opacity: 0.8;
+        }
+
+        .button:disabled {
+            background-color: #48484a;
+            color: #8e8e93;
+            cursor: not-allowed;
+        }
+
+        .results-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .result {
+            font-size: 18px;
+            font-weight: 500;
+            min-height: 27px;
+        }
+
+        .result-price {
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            color: #ffffff;
+            margin-top: 3px;
+        }
+
+        .result-price img {
+            width: 14px;
+            height: 14px;
+            margin-right: 5px;
+        }
+
+        .rarity-common { color: #f2f2f7; }
+        .rarity-uncommon { color: #30d158; }
+        .rarity-rare { color: #0a84ff; }
+        .rarity-mythical { color: #bf5af2; }
+        .rarity-legendary { color: #ff9f0a; }
+        .rarity-wtf { color: #ff1a1a; }
+        .rarity-nothing { color: #ffffff; }
+
+        /* Р   Р  Р вЂ№Р  Р Р‹Р Р†Р вЂљРЎв„ўР   Р РЋРІР‚ВР   Р вЂ™Р’В»Р   Р РЋРІР‚В Р   Р СћРІР‚ВР   Р вЂ™Р’В»Р  Р Р‹Р  Р РЏ Р   Р РЋРІР‚вЂќР   Р вЂ™Р’ВµР  Р Р‹Р  РІР‚С™Р   Р вЂ™Р’ВµР   Р РЋРІР‚СњР   Р вЂ™Р’В»Р  Р Р‹Р  РІР‚в„–Р  Р Р‹Р Р†Р вЂљР Р‹Р   Р вЂ™Р’В°Р  Р Р‹Р Р†Р вЂљРЎв„ўР   Р вЂ™Р’ВµР   Р вЂ™Р’В»Р  Р Р‹Р  Р РЏ Р   Р СћРІР‚ВР   Р вЂ™Р’ВµР   Р РЋР’ВР   Р РЋРІР‚Сћ-Р  Р Р‹Р  РІР‚С™Р   Р вЂ™Р’ВµР   Р вЂ™Р’В¶Р   Р РЋРІР‚ВР   Р РЋР’ВР   Р вЂ™Р’В° */
+        .settings {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .setting-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .setting-label {
+            font-size: 14px;
+            color: var(--secondary-text);
+        }
+
+        .case-count-selector {
+            display: flex;
+            gap: 10px;
+        }
+
+        .case-count-btn {
+            background-color: var(--item-bg-color);
+            color: var(--text-color);
+            border: none;
+            border-radius: 8px;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .case-count-btn.active {
+            background-color: var(--accent-color);
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        #case-loading-overlay {
+  display: none;
+  position: fixed;
+  z-index: 9999;
+  inset: 0;
+  background: rgba(28,28,30, 0.85); /* Р  Р’В·Р  Р’В°Р РЋРІР‚С™Р  Р’ВµР  РЎВР  Р вЂ¦Р  Р’ВµР  Р вЂ¦Р  РЎвЂР  Р’Вµ */
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.4s;
+}
+
+#case-loading-overlay.active {
+  display: flex;
+  opacity: 1;
+}
+
+.case-loading-content {
+  text-align: center;
+  color: #fff;
+}
+
+.case-loading-text {
+  margin-top: 16px;
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  font-family: 'Roboto';
+}
+
+.case-loading-spinner {
+  border: 5px solid rgba(255,255,255,0.2);
+  border-top: 5px solid var(--accent-color);
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto;
+}
+
+@keyframes spin {
+  100% { transform: rotate(360deg); }
+}
+
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #48484a;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--accent-color);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        /* Р   Р  Р вЂ№Р  Р Р‹Р Р†Р вЂљРЎв„ўР   Р РЋРІР‚ВР   Р вЂ™Р’В»Р   Р РЋРІР‚В Р   Р СћРІР‚ВР   Р вЂ™Р’В»Р  Р Р‹Р  Р РЏ Р  Р Р‹Р Р†Р вЂљРЎв„ўР   Р вЂ™Р’В°Р   Р вЂ™Р’В±Р   Р вЂ™Р’В±Р   Р вЂ™Р’В°Р  Р Р‹Р  РІР‚С™Р   Р вЂ™Р’В° */
+        .tabbar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: var(--tabbar-height);
+            background-color: var(--card-color);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-top: 1px solid var(--border-color);
+            z-index: 100;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        .tab {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 12px;
+            color: var(--secondary-text);
+            text-decoration: none;
+            font-size: 12px;
+            transition: color 0.2s;
+            flex: 1;
+            height: 100%;
+        }
+
+        .tab.active {
+            color: var(--accent-color);
+        }
+
+        .tab i {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+
+        /* Р   Р  Р вЂ№Р  Р Р‹Р Р†Р вЂљРЎв„ўР   Р РЋРІР‚ВР   Р вЂ™Р’В»Р   Р РЋРІР‚В Р   Р СћРІР‚ВР   Р вЂ™Р’В»Р  Р Р‹Р  Р РЏ Р   Р РЋРІР‚СњР   Р РЋРІР‚СћР   Р  РІР‚В¦Р  Р Р‹Р Р†Р вЂљРЎв„ўР   Р вЂ™Р’ВµР   Р  РІР‚В¦Р  Р Р‹Р Р†Р вЂљРЎв„ўР   Р вЂ™Р’В° Р   Р  РІР‚ Р   Р РЋРІР‚СњР   Р вЂ™Р’В»Р   Р вЂ™Р’В°Р   Р СћРІР‚ВР   Р РЋРІР‚СћР   Р РЋРІР‚Сњ */
+        .tab-content {
+            display: none;
+            width: 100%;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Р   Р  Р вЂ№Р  Р Р‹Р Р†Р вЂљРЎв„ўР   Р РЋРІР‚ВР   Р вЂ™Р’В»Р   Р РЋРІР‚В Р   Р СћРІР‚ВР   Р вЂ™Р’В»Р  Р Р‹Р  Р РЏ Р  Р Р‹Р  РЎвЂњР  Р Р‹Р Р†Р вЂљРЎв„ўР  Р Р‹Р  РІР‚С™Р   Р вЂ™Р’В°Р   Р  РІР‚В¦Р   Р РЋРІР‚ВР  Р Р‹Р Р†Р вЂљ Р  Р Р‹Р Р†Р вЂљРІвЂћвЂ“ Р   Р РЋРІР‚вЂќР  Р Р‹Р  РІР‚С™Р   Р РЋРІР‚СћР  Р Р‹Р Р†Р вЂљРЎвЂєР   Р РЋРІР‚ВР   Р вЂ™Р’В»Р  Р Р‹Р  Р РЏ Р   Р РЋРІР‚В Р   Р РЋРІР‚вЂќР   Р РЋРІР‚СћР   Р СћРІР‚ВР   Р вЂ™Р’В°Р  Р Р‹Р  РІР‚С™Р   Р РЋРІР‚СњР   Р РЋРІР‚СћР   Р  РІР‚  */
+        .profile-container, .gifts-container {
+            padding: 20px;
+        }
+
+        .profile-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+/* Р вЂќР С•Р В±Р В°Р Р†РЎРЉРЎвЂљР Вµ РЎРЊРЎвЂљР С‘ РЎРѓРЎвЂљР С‘Р В»Р С‘ Р Р† Р Р†Р В°РЎв‚¬ CSS */
+.mprofile-header-container {
+    width: 100%;
+    max-width: 500px;
+    padding: 0 20px;
+    box-sizing: border-box;
+    margin-bottom: 15px;
+}
+
+.mprofile-header {
+    display: flex;
+    align-items: center;
+    background-color: var(--item-bg-color);
+            flex-direction: row;
+    border-radius: var(--border-radius);
+    padding: 10px 15px;
+    width: 100%;
+    box-sizing: border-box;
+    gap: 12px; /* Р С›РЎвЂљРЎРѓРЎвЂљРЎС“Р С— Р СР ВµР В¶Р Т‘РЎС“ РЎРЊР В»Р ВµР СР ВµР Р…РЎвЂљР В°Р СР С‘ */
+}
+
+.mprofile-header-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--accent-color);
+    flex-shrink: 0; /* Р В§РЎвЂљР С•Р В±РЎвЂ№ Р В°Р Р†Р В°РЎвЂљР В°РЎР‚Р С”Р В° Р Р…Р Вµ РЎРѓР В¶Р С‘Р СР В°Р В»Р В°РЎРѓРЎРЉ */
+}
+
+.mprofile-header-name {
+    font-weight: 500;
+    font-size: 16px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-grow: 1; /* Р вЂ”Р В°Р Р…Р С‘Р СР В°Р ВµРЎвЂљ Р Р†РЎРѓР Вµ Р Т‘Р С•РЎРѓРЎвЂљРЎС“Р С—Р Р…Р С•Р Вµ Р С—РЎР‚Р С•РЎРѓРЎвЂљРЎР‚Р В°Р Р…РЎРѓРЎвЂљР Р†Р С• */
+    padding-right: 10px; /* Р С›РЎвЂљРЎРѓРЎвЂљРЎС“Р С— Р С—Р ВµРЎР‚Р ВµР Т‘ Р В±Р В°Р В»Р В°Р Р…РЎРѓР С•Р С */
+}
+
+.mprofile-header-balance {
+    display: flex;
+    align-items: center;
+    background-color: rgba(10, 132, 255, 0.2);
+    border-radius: 12px;
+    padding: 4px 8px;
+    font-weight: 500;
+    font-size: 14px;
+    margin-left: auto; /* Р СџРЎР‚Р С‘Р В¶Р С‘Р СР В°Р ВµР С Р В±Р В°Р В»Р В°Р Р…РЎРѓ Р С” Р С—РЎР‚Р В°Р Р†Р С•Р СРЎС“ Р С”РЎР‚Р В°РЎР‹ */
+    flex-shrink: 0; /* Р В§РЎвЂљР С•Р В±РЎвЂ№ Р В±Р В°Р В»Р В°Р Р…РЎРѓ Р Р…Р Вµ РЎРѓР В¶Р С‘Р СР В°Р В»РЎРѓРЎРЏ */
+}
+
+.ton-icon {
+    width: 16px;
+    height: 16px;
+    margin-left: 4px;
+}
+        
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 15px;
+            border: 3px solid var(--accent-color);
+        }
+
+        .profile-name {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .profile-id {
+            font-size: 14px;
+            color: var(--secondary-text);
+            background-color: var(--item-bg-color);
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+
+        .gift-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background-color: var(--item-bg-color);
+            border-radius: var(--border-radius);
+            margin-bottom: 10px;
+        }
+
+        .gift-item img {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+            margin-right: 12px;
+        }
+
+        .gift-info {
+            flex: 1;
+        }
+
+        .gift-name {
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .gift-price {
+            display: flex;
+            align-items: center;
+            font-size: 12px;
+            color: #ffffff;
+        }
+
+        .gift-price img {
+            width: 12px;
+            height: 12px;
+            margin-right: 3px;
+        }
+
+        .gift-date {
+            font-size: 12px;
+            color: var(--secondary-text);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--secondary-text);
+        }
+
+        /* Р   Р  Р вЂ№Р  Р Р‹Р Р†Р вЂљРЎв„ўР   Р РЋРІР‚ВР   Р вЂ™Р’В»Р   Р РЋРІР‚В Р   Р СћРІР‚ВР   Р вЂ™Р’В»Р  Р Р‹Р  Р РЏ Р  Р Р‹Р  РЎвЂњР   Р РЋРІР‚вЂќР   Р РЋРІР‚ВР  Р Р‹Р  РЎвЂњР   Р РЋРІР‚СњР   Р вЂ™Р’В° Р   Р  РІР‚ Р   Р РЋРІР‚СћР   Р вЂ™Р’В·Р   Р РЋР’ВР   Р РЋРІР‚СћР   Р вЂ™Р’В¶Р   Р  РІР‚В¦Р  Р Р‹Р Р†Р вЂљРІвЂћвЂ“Р  Р Р‹Р Р†Р вЂљР’В¦ Р   Р РЋРІР‚вЂќР  Р Р‹Р  РІР‚С™Р   Р вЂ™Р’ВµР   Р СћРІР‚ВР   Р РЋР’ВР   Р вЂ™Р’ВµР  Р Р‹Р Р†Р вЂљРЎв„ўР   Р РЋРІР‚СћР   Р  РІР‚  */
+        .possible-items {
+            margin-top: 20px;
+        }
+
+        .possible-items-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .item-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: var(--item-bg-color);
+            border-radius: 10px;
+            padding: 10px;
+            transition: transform 0.2s;
+        }
+
+        .item-card img {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+            filter: brightness(0.9);
+        }
+
+        .item-card p {
+            margin: 8px 0 0;
+            font-size: 12px;
+            font-weight: 500;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 100%;
+        }
+
+        .item-card-price {
+            display: flex;
+            align-items: center;
+            margin-top: 3px;
+            font-size: 11px;
+            color: #ffffff;
+        }
+
+        .item-card-price img {
+            width: 12px;
+            height: 12px;
+            margin-right: 3px;
+        }
+
+        .rarity-label {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-top: 4px;
+            background-color: rgba(0, 0, 0, 0.2);
+        }
+
+        .rarity-common .rarity-label { background-color: rgba(255, 255, 255, 0.1); }
+        .rarity-uncommon .rarity-label { background-color: rgba(48, 209, 88, 0.2); }
+        .rarity-rare .rarity-label { background-color: rgba(10, 132, 255, 0.2); }
+        .rarity-mythical .rarity-label { background-color: rgba(191, 90, 242, 0.2); }
+        .rarity-legendary .rarity-label { background-color: rgba(255, 159, 10, 0.2); }
+        .rarity-wtf .rarity-label { background-color: rgba(255, 10, 10, 0.2); }
+        .rarity-nothing .rarity-label { background-color: rgba(255, 255, 255, 0.1); }
+
+        #preloader {
+  position: fixed;
+  z-index: 9999;
+  inset: 0;
+  background: var(--bg-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.7s;
+}
+
+#preloader img {
+  width: 90px;
+  height: 90px;
+  object-fit: contain;
+}
+#preloader.hide {
+  opacity: 0;
+  pointer-events: none;
+}
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+
+<!-- Р’СЃС‚Р°РІСЊС‚Рµ СЌС‚РѕС‚ РєРѕРґ СЃСЂР°Р·Сѓ РїРѕСЃР»Рµ РѕС‚РєСЂС‹РІР°СЋС‰РµРіРѕ С‚РµРіР° <body> -->
+
+</div>
+</div>
+    <div id="preloader">
+  <img src="load.gif" alt="" />
+</div>
+    <div class="container">
+        <!-- Р  РІР‚в„ўР  РЎвЂќР  Р’В»Р  Р’В°Р  РўвЂР  РЎвЂќР  Р’В° Р РЋР вЂљР РЋРЎвЂњР  Р’В»Р  Р’ВµР РЋРІР‚С™Р  РЎвЂќР  РЎвЂ -->
+        <div class="tab-content active" id="roulette-tab">
+            <div class="mprofile-header-container">
+    <div class="mprofile-header">
+        <img id="header-user-avatar" class="mprofile-header-avatar" src="" alt="Profile Photo">
+        <span id="header-user-name" class="mprofile-header-name"></span>
+<div class="mprofile-header-balance" id="site-balance"></div>
+<div id="ton-connect-button"></div>
+
+        </div>
+    </div>
+            <div class="card dragscroll">
+                <p class="subtitle">
+                    @RunGift_bot
+                </p>
+                
+                <div class="roulette-container" id="roulette-container">
+                    <!-- Р   Р РЋРЎвЂњР  Р’В»Р  Р’ВµР РЋРІР‚С™Р  РЎвЂќР  РЎвЂ Р  Р’В±Р РЋРЎвЂњР  РўвЂР РЋРЎвЂњР РЋРІР‚С™ Р  РўвЂР  РЎвЂўР  Р’В±Р  Р’В°Р  Р вЂ Р  Р’В»Р РЋР РЏР РЋРІР‚С™Р РЋР Р‰Р РЋР С“Р РЋР РЏ Р РЋР С“Р РЋР вЂ№Р  РўвЂР  Р’В° Р  РўвЂР  РЎвЂР  Р вЂ¦Р  Р’В°Р  РЎВР  РЎвЂР РЋРІР‚РЋР  Р’ВµР РЋР С“Р  РЎвЂќР  РЎвЂ -->
+                </div>
+                
+<button class="button button-with-price" id="spin-button">
+    <div class="button-price">
+        <img src="ton.png" alt="TON">
+        <span id="case-price">1.5</span>
+    </div>
+    Open Case
+</button>
+                
+                <div class="results-container" id="results-container">
+                    <!-- Р   Р  Р’ВµР  Р’В·Р РЋРЎвЂњР  Р’В»Р РЋР Р‰Р РЋРІР‚С™Р  Р’В°Р РЋРІР‚С™Р РЋРІР‚в„– Р  Р’В±Р РЋРЎвЂњР  РўвЂР РЋРЎвЂњР РЋРІР‚С™ Р  РўвЂР  РЎвЂўР  Р’В±Р  Р’В°Р  Р вЂ Р  Р’В»Р РЋР РЏР РЋРІР‚С™Р РЋР Р‰Р РЋР С“Р РЋР РЏ Р РЋР С“Р РЋР вЂ№Р  РўвЂР  Р’В° -->
+                </div>
+
+                <div class="settings">
+                    <div class="setting-group">
+                        <span class="setting-label">Number of cases (1-3):</span>
+                        <div class="case-count-selector">
+                            <button class="case-count-btn active" data-count="1">1</button>
+                            <button class="case-count-btn" data-count="2">2</button>
+                            <button class="case-count-btn" data-count="3">3</button>
+                        </div>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <span class="setting-label">Demo</span>
+                        <label class="switch">
+                            <input type="checkbox" id="demo-mode">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Р  Р Р‹Р  РЎвЂ”Р  РЎвЂР РЋР С“Р  РЎвЂўР  РЎвЂќ Р  Р вЂ Р  РЎвЂўР  Р’В·Р  РЎВР  РЎвЂўР  Р’В¶Р  Р вЂ¦Р РЋРІР‚в„–Р РЋРІР‚В¦ Р  РЎвЂ”Р РЋР вЂљР  Р’ВµР  РўвЂР  РЎВР  Р’ВµР РЋРІР‚С™Р  РЎвЂўР  Р вЂ  -->
+            <div class="card possible-items">
+                <div class="possible-items-title">Possible Rewards</div>
+                <div class="items-grid" id="items-grid">
+                    <!-- Р  РЎСџР РЋР вЂљР  Р’ВµР  РўвЂР  РЎВР  Р’ВµР РЋРІР‚С™Р РЋРІР‚в„– Р  Р’В±Р РЋРЎвЂњР  РўвЂР РЋРЎвЂњР РЋРІР‚С™ Р  РўвЂР  РЎвЂўР  Р’В±Р  Р’В°Р  Р вЂ Р  Р’В»Р РЋР РЏР РЋРІР‚С™Р РЋР Р‰Р РЋР С“Р РЋР РЏ Р РЋР С“Р РЋР вЂ№Р  РўвЂР  Р’В° Р  РўвЂР  РЎвЂР  Р вЂ¦Р  Р’В°Р  РЎВР  РЎвЂР РЋРІР‚РЋР  Р’ВµР РЋР С“Р  РЎвЂќР  РЎвЂ -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Р  РІР‚в„ўР  РЎвЂќР  Р’В»Р  Р’В°Р  РўвЂР  РЎвЂќР  Р’В° Р  РЎвЂ”Р РЋР вЂљР  РЎвЂўР РЋРІР‚С›Р  РЎвЂР  Р’В»Р РЋР РЏ -->
+        <div class="tab-content" id="profile-tab">
+            <div class="card profile-container">
+                <h1>Profile</h1>
+                <div class="profile-header">
+                    <img id="user-avatar" class="profile-avatar" src="" alt="Profile Photo">
+                    <div class="profile-name" id="user-name"></div>
+                    <div class="profile-id" id="user-id"></div>
+                </div>
+                <div class="empty-state">
+                    <p>Your statistics and achievements will be displayed here</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Р  РІР‚в„ўР  РЎвЂќР  Р’В»Р  Р’В°Р  РўвЂР  РЎвЂќР  Р’В° Р  РЎвЂ”Р  РЎвЂўР  РўвЂР  Р’В°Р РЋР вЂљР  РЎвЂќР  РЎвЂўР  Р вЂ  -->
+        <div class="tab-content" id="gifts-tab">
+            <div class="card gifts-container">
+                <h1>Your Gifts</h1>
+                <div id="gifts-list">
+                    <!-- Р  РЎСџР  РЎвЂўР  РўвЂР  Р’В°Р РЋР вЂљР  РЎвЂќР  РЎвЂ Р  Р’В±Р РЋРЎвЂњР  РўвЂР РЋРЎвЂњР РЋРІР‚С™ Р  РўвЂР  РЎвЂўР  Р’В±Р  Р’В°Р  Р вЂ Р  Р’В»Р РЋР РЏР РЋРІР‚С™Р РЋР Р‰Р РЋР С“Р РЋР РЏ Р РЋР С“Р РЋР вЂ№Р  РўвЂР  Р’В° Р  РўвЂР  РЎвЂР  Р вЂ¦Р  Р’В°Р  РЎВР  РЎвЂР РЋРІР‚РЋР  Р’ВµР РЋР С“Р  РЎвЂќР  РЎвЂ -->
+                </div>
+                <div class="empty-state" id="no-gifts-message">
+                    <i class="fas fa-gift" style="font-size: 40px; margin-bottom: 15px;"></i>
+                    <p>You haven't won any gifts yet</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Р  РЎС›Р  Р’В°Р  Р’В±Р  Р’В±Р  Р’В°Р РЋР вЂљ -->
+    <div class="tabbar">
+        <a href="#" class="tab active" data-tab="roulette-tab">
+            <i class="fas fa-dice"></i>
+            <span>Roulette</span>
+        </a>
+        <a href="#" class="tab" data-tab="profile-tab">
+            <i class="fas fa-user"></i>
+            <span>Profile</span>
+        </a>
+        <a href="#" class="tab" data-tab="gifts-tab">
+            <i class="fas fa-gift"></i>
+            <span>Gifts</span>
+        </a>
+    </div>
+
+    <script>
+        // Р  Р’ВР  Р вЂ¦Р  РЎвЂР РЋРІР‚ Р  РЎвЂР  Р’В°Р  Р’В»Р  РЎвЂР  Р’В·Р  Р’В°Р РЋРІР‚ Р  РЎвЂР РЋР РЏ Telegram WebApp
+        const tg = window.Telegram.WebApp;
+        
+        // Р  Р в‚¬Р РЋР С“Р РЋРІР‚С™Р  Р’В°Р  Р вЂ¦Р  Р’В°Р  Р вЂ Р  Р’В»Р  РЎвЂР  Р вЂ Р  Р’В°Р  Р’ВµР  РЎВ Р РЋРІР‚ Р  Р вЂ Р  Р’ВµР РЋРІР‚С™ Р  Р’В·Р  Р’В°Р  РЎвЂ“Р  РЎвЂўР  Р’В»Р  РЎвЂўР  Р вЂ Р  РЎвЂќР  Р’В°
+        tg.headerColor = "#1c1c1e";
+        tg.backgroundColor = "#1c1c1e";
+        
+        // Р  РЎСџР  РЎвЂўР  Р’В»Р РЋРЎвЂњР РЋРІР‚РЋР  Р’В°Р  Р’ВµР  РЎВ Р  РўвЂР  Р’В°Р  Р вЂ¦Р  Р вЂ¦Р РЋРІР‚в„–Р  Р’Вµ Р  РЎвЂ”Р  РЎвЂўР  Р’В»Р РЋР Р‰Р  Р’В·Р  РЎвЂўР  Р вЂ Р  Р’В°Р РЋРІР‚С™Р  Р’ВµР  Р’В»Р РЋР РЏ
+        const user = tg.initDataUnsafe?.user || {};
+        const userId = user.id || 'unknown';
+        const firstName = user.first_name || 'User';
+        const lastName = user.last_name || '';
+        const username = user.username ? `@${user.username}` : '';
+        const fullName = `${firstName} ${lastName}`.trim();
+        const photoUrl = user.photo_url || 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png';
+
+        // Р  Р’ВР  РЎвЂ“Р РЋР вЂљР  РЎвЂўР  Р вЂ Р РЋРІР‚в„–Р  Р’Вµ Р  РЎвЂ”Р РЋР вЂљР  Р’ВµР  РўвЂР  РЎВР  Р’ВµР РЋРІР‚С™Р РЋРІР‚в„– Р РЋР С“ Р РЋР вЂљР  Р’В°Р  Р’В·Р  Р вЂ¦Р  РЎвЂўР  РІвЂћвЂ“ Р РЋР вЂљР  Р’ВµР  РўвЂР  РЎвЂќР  РЎвЂўР РЋР С“Р РЋРІР‚С™Р РЋР Р‰Р РЋР вЂ№, Р РЋРІР‚ Р  Р’ВµР  Р вЂ¦Р  Р’В°Р  РЎВР  РЎвЂ Р  РЎвЂ Р  РЎвЂ”Р РЋРЎвЂњР РЋРІР‚С™Р РЋР РЏР  РЎВР  РЎвЂ Р  РЎвЂќ Р  РЎвЂР  Р’В·Р  РЎвЂўР  Р’В±Р РЋР вЂљР  Р’В°Р  Р’В¶Р  Р’ВµР  Р вЂ¦Р  РЎвЂР РЋР РЏР  РЎВ
+        const items = [
+            { name: "Desk Calendar", rarity: "common", price: 1.1, image: "desk.png" },
+            { name: "Lol Pop", rarity: "common", price: 1.1, image: "lol_pop.png" },
+            { name: "B-Day Candle", rarity: "common", price: 1, image: "candle.png" },
+            { name: "Hypno Lollipop", rarity: "uncommon", price: 2, image: "hypno.png" },
+            { name: "Easter Egg", rarity: "rare", price: 3, image: "egg.png" },
+            { name: "Evil Eye", rarity: "rare", price: 5, image: "eye.png" },
+            { name: "Neko Helmet", rarity: "mythical", price: 15, image: "helmet.png" },
+            { name: "Loot Bag", rarity: "legendary", price: 30, image: "loot.png" },
+            { name: "Durov Cap", rarity: "legendary", price: 250, image: "durov.png" },
+            { name: "Plush Pepe", rarity: "wtf", price: 1350, image: "plush_pepe.png" },
+        ];
+
+        // Р  РІР‚в„ўР  Р’ВµР РЋР С“Р  Р’В° Р  РўвЂР  Р’В»Р РЋР РЏ Р  Р вЂ Р  Р’ВµР РЋР вЂљР  РЎвЂўР РЋР РЏР РЋРІР‚С™Р  Р вЂ¦Р  РЎвЂўР РЋР С“Р РЋРІР‚С™Р  Р’ВµР  РІвЂћвЂ“ Р  Р вЂ Р РЋРІР‚в„–Р  РЎвЂ”Р  Р’В°Р  РўвЂР  Р’ВµР  Р вЂ¦Р  РЎвЂР РЋР РЏ (Р  РЎвЂўР  Р’В±Р РЋРІР‚в„–Р РЋРІР‚РЋР  Р вЂ¦Р РЋРІР‚в„–Р  РІвЂћвЂ“ Р РЋР вЂљР  Р’ВµР  Р’В¶Р  РЎвЂР  РЎВ)
+        const normalRarityWeights = {
+            common: 0,
+            uncommon: 0,
+            rare: 0,
+            mythical: 0,
+            legendary: 0,
+            wtf: 0,
+            nothing: 100
+        };
+
+        // Р  РІР‚в„ўР  Р’ВµР РЋР С“Р  Р’В° Р  РўвЂР  Р’В»Р РЋР РЏ Р  РўвЂР  Р’ВµР  РЎВР  РЎвЂў-Р РЋР вЂљР  Р’ВµР  Р’В¶Р  РЎвЂР  РЎВР  Р’В° (Р РЋРЎвЂњР  Р вЂ Р  Р’ВµР  Р’В»Р  РЎвЂР РЋРІР‚РЋР  РЎвЂР  Р вЂ Р  Р’В°Р  Р’ВµР  РЎВ Р РЋРІвЂљВ¬Р  Р’В°Р  Р вЂ¦Р РЋР С“Р РЋРІР‚в„– Р  Р вЂ¦Р  Р’В° Р РЋР вЂљР  Р’ВµР  РўвЂР  РЎвЂќР  РЎвЂР  Р’Вµ Р  РЎвЂ”Р РЋР вЂљР  Р’ВµР  РўвЂР  РЎВР  Р’ВµР РЋРІР‚С™Р РЋРІР‚в„–)
+        const demoRarityWeights = {
+            common: 10,
+            uncommon: 20,
+            rare: 30,
+            mythical: 25,
+            legendary: 15,
+            wtf: 5
+        };
+
+        const rouletteContainer = document.getElementById('roulette-container');
+        const resultsContainer = document.getElementById('results-container');
+        const spinButton = document.getElementById('spin-button');
+        const demoModeSwitch = document.getElementById('demo-mode');
+        const caseCountButtons = document.querySelectorAll('.case-count-btn');
+        const giftsList = document.getElementById('gifts-list');
+        const noGiftsMessage = document.getElementById('no-gifts-message');
+        const userAvatar = document.getElementById('user-avatar');
+        const userName = document.getElementById('user-name');
+        const userIdElement = document.getElementById('user-id');
+        const itemsGrid = document.getElementById('items-grid');
+        
+        let demoMode = false;
+        let caseCount = 1;
+        let isSpinning = false;
+        let spinningCount = 0;
+        let wonGifts = []; // Р  РЎС™Р  Р’В°Р РЋР С“Р РЋР С“Р  РЎвЂР  Р вЂ  Р  РўвЂР  Р’В»Р РЋР РЏ Р РЋРІР‚В¦Р РЋР вЂљР  Р’В°Р  Р вЂ¦Р  Р’ВµР  Р вЂ¦Р  РЎвЂР РЋР РЏ Р  Р вЂ Р РЋРІР‚в„–Р  РЎвЂР  РЎвЂ“Р РЋР вЂљР  Р’В°Р  Р вЂ¦Р  Р вЂ¦Р РЋРІР‚в„–Р РЋРІР‚В¦ Р  РЎвЂ”Р  РЎвЂўР  РўвЂР  Р’В°Р РЋР вЂљР  РЎвЂќР  РЎвЂўР  Р вЂ  (Р  Р вЂ¦Р  Р’Вµ Р  РЎвЂР  Р’В· Р  РўвЂР  Р’ВµР  РЎВР  РЎвЂў-Р РЋР вЂљР  Р’ВµР  Р’В¶Р  РЎвЂР  РЎВР  Р’В°)
+
+        // Р  Р’ВР  Р вЂ¦Р  РЎвЂР РЋРІР‚ Р  РЎвЂР  Р’В°Р  Р’В»Р  РЎвЂР  Р’В·Р  Р’В°Р РЋРІР‚ Р  РЎвЂР РЋР РЏ Р РЋР вЂљР РЋРЎвЂњР  Р’В»Р  Р’ВµР РЋРІР‚С™Р  РЎвЂўР  РЎвЂќ
+        function initializeRoulettes() {
+            rouletteContainer.innerHTML = '';
+            resultsContainer.innerHTML = '';
+            
+            for (let i = 0; i < caseCount; i++) {
+                createRoulette(i);
+            }
+        }
+        function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+
+// Обновляем цену кейса в зависимости от режима
+function updateCasePrice() {
+    const priceElement = document.getElementById('case-price');
+    if (demoMode) {
+        priceElement.textContent = '1.5';
+        document.getElementById('spin-button').classList.add('free-case');
+    } else {
+        // Умножаем цену на количество кейсов
+        const totalPrice = (1.5 * caseCount).toFixed(2);
+        priceElement.textContent = totalPrice;
+        document.getElementById('spin-button').classList.remove('free-case');
+    }
+}
+
+
+
+// Вызываем при инициализации и при изменении демо-режима
+updateCasePrice();
+demoModeSwitch.addEventListener('change', function() {
+    demoMode = this.checked;
+    updateCasePrice();
+    initializeRoulettes();
+});
+
+const SITE_TEST_BALANCE = 8;
+  const balanceContainer = document.getElementById('site-balance');
+
+ // Глобальные переменные
+// Глобальные переменные
+let depositModal = null;
+let currentDepositTxId = null;
+
+// 1. First define all functions that will be used
+function showDepositModal() {
+    // Создаем модальное окно, если его нет
+    if (!depositModal) {
+        depositModal = document.createElement('div');
+        depositModal.className = 'modal-overlay';
+        depositModal.innerHTML = `
+            <div class="modal-content">
+                <h3>Deposit TON</h3>
+                <p>Enter the amount you want to deposit:</p>
+                <input type="number" id="deposit-amount" min="0.1" step="0.1" placeholder="1.0">
+                <div class="modal-buttons">
+                    <button id="cancel-deposit">Cancel</button>
+                    <button id="confirm-deposit">Deposit</button>
+                </div>
+                <div id="deposit-instructions" style="display: none; margin-top: 15px;">
+<p>Please send <span id="deposit-total">0</span> TON with comment "<span id="payment-comment">hud321dwj</span>" to:</p>
+                    <p><strong>UQCFgjQeC50-5-Q6mXKKdjg8kywSywqWviLvKQKfj-DtKApj</strong></p>
+                    <div style="margin-top: 15px;">
+                        <a id="tonkeeper-link" class="button" style="margin-right: 10px;">Tonkeeper</a>
+                        <a id="telegram-link" class="button">Telegram Wallet</a>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(depositModal);
+        
+        // Обработчики для кнопок
+        document.getElementById('cancel-deposit').addEventListener('click', hideDepositModal);
+        document.getElementById('confirm-deposit').addEventListener('click', processDeposit);
+    }
+    
+    // Показываем модальное окно
+    depositModal.style.display = 'flex';
+    document.getElementById('deposit-instructions').style.display = 'none';
+}
+
+
+  function generateRandomString(length) {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+  }
+
+  // Ждём полной загрузки страницы
+  // Заменяем текст комментария на случайный
+
+  // Вставляем случайный набор из 9 символов в элемент с id="random-comment"
+  //document.getElementById('random-comment').textContent = generateRandomString(9);
+
+
+
+function processDeposit() {
+    const amount = parseFloat(document.getElementById('deposit-amount').value);
+    
+    if (isNaN(amount) || amount <= 0) {
+        alert('Please enter a valid amount');
+        return;
+    }
+    const randomComment = generateRandomString(9);
+    // Показываем инструкции
+    const instructions = document.getElementById('deposit-instructions');
+    document.getElementById('deposit-total').textContent = amount;
+    instructions.style.display = 'block';
+
+    document.getElementById('payment-comment').textContent = randomComment; // Добавьте эту стро
+
+    // Формируем deep links для Tonkeeper и Telegram Wallet
+    const walletAddress = "UQCFgjQeC50-5-Q6mXKKdjg8kywSywqWviLvKQKfj-DtKApj";
+    const nanoAmount = Math.floor(amount * 1000000000); // Конвертируем в нанотоны
+    
+    const tonkeeperLink = document.getElementById('tonkeeper-link');
+    tonkeeperLink.href = `https://app.tonkeeper.com/transfer/${walletAddress}?amount=${nanoAmount}`;
+    
+    const telegramLink = document.getElementById('telegram-link');
+    telegramLink.href = `https://t.me/wallet?startattach=wallet&transfer=${walletAddress}&amount=${nanoAmount}`;
+    
+    // Добавляем обработчики для кнопок
+    tonkeeperLink.addEventListener('click', function(e) {
+        e.preventDefault();
+        window.open(this.href, '_blank');
+    });
+    
+    telegramLink.addEventListener('click', function(e) {
+        e.preventDefault();
+        window.open(this.href, '_blank');
+    });
+}
+
+function hideDepositModal() {
+    if (depositModal) {
+        depositModal.style.display = 'none';
+        // Сбрасываем состояние
+        document.getElementById('deposit-instructions').style.display = 'none';
+        document.getElementById('deposit-amount').value = '';
+    }
+}
+
+function hideDepositModal() {
+    if (depositModal) {
+        depositModal.style.display = 'none';
+        // Сбрасываем состояние
+        document.getElementById('deposit-instructions').style.display = 'none';
+        document.getElementById('deposit-amount').value = '';
+    }
+}
+
+
+
+async function checkDepositStatus() {
+    if (!currentDepositTxId) return;
+    
+    try {
+        const response = await fetch(`http://localhost:5000/check_transaction?tx_id=${currentDepositTxId}`);
+        const data = await response.json();
+        
+        if (response.ok) {
+            if (data.status === 'completed') {
+                // Обновляем баланс
+                userBalance += data.amount;
+                updateBalanceDisplay();
+                
+                // Показываем сообщение об успехе
+                document.getElementById('deposit-status').textContent = 'Deposit successful!';
+                document.getElementById('check-transaction').style.display = 'none';
+                
+                // Закрываем модальное окно через 2 секунды
+                setTimeout(hideDepositModal, 2000);
+            } else {
+                document.getElementById('deposit-status').textContent = 'Still waiting for transaction...';
+            }
+        } else {
+            document.getElementById('deposit-status').textContent = 'Error checking transaction';
+        }
+    } catch (error) {
+        console.error('Check transaction error:', error);
+        document.getElementById('deposit-status').textContent = 'Error checking transaction';
+    }
+}
+
+function initBalanceUI() {
+    const balanceContainer = document.getElementById('site-balance');
+    if (!balanceContainer) return;
+    
+    balanceContainer.innerHTML = `
+        <div class="balance-display">
+            <span>${userBalance.toFixed(2)}</span>
+            <img class="ton-icon" src="ton.png" alt="TON">
+            <button id="deposit-button" class="deposit-button">+</button>
+        </div>
+    `;
+    
+    // Добавляем обработчик для кнопки пополнения
+    document.getElementById('deposit-button').addEventListener('click', showDepositModal);
+}
+
+function updateBalanceDisplay() {
+    const balanceContainer = document.getElementById('site-balance');
+    if (!balanceContainer) return;
+
+    balanceContainer.innerHTML = `
+        <div class="balance-display">
+            <span>${userBalance.toFixed(2)}</span>
+            <img class="ton-icon" src="ton.png" alt="TON">
+            <button id="deposit-button" class="deposit-button">+</button>
+        </div>
+    `;
+
+    document.getElementById('deposit-button').addEventListener('click', showDepositModal);
+}
+
+
+// 2. Initialize Telegram WebApp
+function initTelegramWebApp() {
+    if (window.Telegram && window.Telegram.WebApp) {
+        try {
+            // Only try to set colors if the version supports it
+            if (window.Telegram.WebApp.version >= 6.1) {
+                window.Telegram.WebApp.setHeaderColor('#0a84ff');
+                window.Telegram.WebApp.setBackgroundColor('#ffffff');
+            }
+            
+            // Expand the WebApp to full view
+            window.Telegram.WebApp.expand();
+            
+            // Get theme parameters
+            const themeParams = window.Telegram.WebApp.themeParams;
+            console.log('Theme params:', themeParams);
+            
+        } catch (e) {
+            console.warn('Telegram WebApp API error:', e);
+        }
+    }
+}
+
+// 3. Initialize TonConnect
+function initTonConnect() {
+    const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
+        manifestUrl: 'https://gist.githubusercontent.com/siandreev/75f1a2ccf2f3b4e2771f6089aeb06d7f/raw/d4986344010ec7a2d1cc8a2a9baa57de37aaccb8/gistfile1.txt',
+        buttonRootId: 'ton-connect-button',
+        language: 'en',
+        uiPreferences: {
+            theme: 'DARK',
+            colorsSet: {
+                [TON_CONNECT_UI.THEME.DARK]: {
+                    connectButton: {
+                        background: '#0a84ff',
+                        foreground: '#ffffff'
+                    }
+                }
+            }
+        }
+    });
+
+    tonConnectUI.onStatusChange((wallet) => {
+        if (wallet) {
+            // Загружаем баланс пользователя
+            fetch(`http://localhost:5000/get_balance?user_id=${userId}`)
+                .then(response => response.json())
+                .then(data => {
+                    userBalance = data.balance;
+                    initBalanceUI();
+                })
+                .catch(error => {
+                    console.error('Balance load error:', error);
+                    userBalance = 0;
+                    initBalanceUI();
+                });
+        } else {
+            // Показываем кнопку подключения
+            if (tonConnectUI.ui && typeof tonConnectUI.ui.renderButton === 'function') {
+                tonConnectUI.ui.renderButton();
+            }
+            initBalanceUI();
+        }
+    });
+
+    tonConnectUI.connectionRestored.then(restored => {
+        if (restored) {
+            fetch(`http://localhost:5000/get_balance?user_id=${userId}`)
+                .then(response => response.json())
+                .then(data => {
+                    userBalance = data.balance;
+                    initBalanceUI();
+                })
+                .catch(error => {
+                    console.error('Balance load error:', error);
+                    userBalance = 0;
+                    initBalanceUI();
+                });
+        } else {
+            if (tonConnectUI.ui && typeof tonConnectUI.ui.renderButton === 'function') {
+                tonConnectUI.ui.renderButton();
+            }
+            initBalanceUI();
+        }
+    });
+}
+
+// 4. Initialize everything when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    // Initialize Telegram WebApp
+    initTelegramWebApp();
+    
+    // Initialize TonConnect
+    initTonConnect();
+    
+    // Initialize balance UI
+    initBalanceUI();
+});
+        // Р  Р Р‹Р  РЎвЂўР  Р’В·Р  РўвЂР  Р’В°Р  Р вЂ¦Р  РЎвЂР  Р’Вµ Р  РЎвЂўР  РўвЂР  Р вЂ¦Р  РЎвЂўР  РІвЂћвЂ“ Р РЋР вЂљР РЋРЎвЂњР  Р’В»Р  Р’ВµР РЋРІР‚С™Р  РЎвЂќР  РЎвЂ
+// Р РЋР С•Р В·Р Т‘Р В°Р Р…Р С‘Р Вµ Р С•Р Т‘Р Р…Р С•Р в„– РЎР‚РЎС“Р В»Р ВµРЎвЂљР С”Р С‘
+// Р вЂњР В»Р С•Р В±Р В°Р В»РЎРЉР Р…РЎвЂ№Р в„– Р СР В°РЎРѓРЎРѓР С‘Р Р† Р Т‘Р В»РЎРЏ РЎвЂ¦РЎР‚Р В°Р Р…Р ВµР Р…Р С‘РЎРЏ РЎвЂљР ВµР С”РЎС“РЎвЂ°Р ВµР С–Р С• Р С—Р С•РЎР‚РЎРЏР Т‘Р С”Р В° РЎРЊР В»Р ВµР СР ВµР Р…РЎвЂљР С•Р Р† Р Р† Р С”Р В°Р В¶Р Т‘Р С•Р в„– РЎР‚РЎС“Р В»Р ВµРЎвЂљР С”Р Вµ
+const currentRouletteItems = [];
+
+// Р РЋР С•Р В·Р Т‘Р В°Р Р…Р С‘Р Вµ Р С•Р Т‘Р Р…Р С•Р в„– РЎР‚РЎС“Р В»Р ВµРЎвЂљР С”Р С‘
+function createRoulette(index) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'roulette-wrapper';
+    wrapper.id = `roulette-wrapper-${index}`;
+    
+    const border = document.createElement('div');
+    border.className = 'roulette-border';
+    
+    const center = document.createElement('div');
+    center.className = 'roulette-center';
+    
+    const wheel = document.createElement('div');
+    wheel.className = 'roulette-wheel';
+    wheel.id = `roulette-wheel-${index}`;
+    
+    border.appendChild(center);
+    border.appendChild(wheel);
+    wrapper.appendChild(border);
+    rouletteContainer.appendChild(wrapper);
+    
+    // Р РЋР С•Р В·Р Т‘Р В°Р ВµР С РЎРЊР В»Р ВµР СР ВµР Р…РЎвЂљРЎвЂ№ РЎР‚РЎС“Р В»Р ВµРЎвЂљР С”Р С‘
+    const wheelElement = document.getElementById(`roulette-wheel-${index}`);
+    wheelElement.innerHTML = '';
+    
+    // Р РЋР С•Р В·Р Т‘Р В°Р ВµР С Р С—Р ВµРЎР‚Р ВµР СР ВµРЎв‚¬Р В°Р Р…Р Р…РЎС“РЎР‹ Р С”Р С•Р С—Р С‘РЎР‹ Р СР В°РЎРѓРЎРѓР С‘Р Р†Р В° items
+    const shuffledItems = shuffleArray([...items]);
+    // Р РЋР С•РЎвЂ¦РЎР‚Р В°Р Р…РЎРЏР ВµР С Р С—Р С•РЎР‚РЎРЏР Т‘Р С•Р С” РЎРЊР В»Р ВµР СР ВµР Р…РЎвЂљР С•Р Р† Р Т‘Р В»РЎРЏ РЎРЊРЎвЂљР С•Р в„– РЎР‚РЎС“Р В»Р ВµРЎвЂљР С”Р С‘
+    currentRouletteItems[index] = shuffledItems;
+    
+    // Р вЂќР С•Р В±Р В°Р Р†Р В»РЎРЏР ВµР С РЎРЊР В»Р ВµР СР ВµР Р…РЎвЂљРЎвЂ№ Р Р† РЎР‚РЎС“Р В»Р ВµРЎвЂљР С”РЎС“ (Р Р† Р С—Р ВµРЎР‚Р ВµР СР ВµРЎв‚¬Р В°Р Р…Р Р…Р С•Р С Р С—Р С•РЎР‚РЎРЏР Т‘Р С”Р Вµ)
+    for (let i = 0; i < shuffledItems.length * 20; i++) {
+        const item = shuffledItems[i % shuffledItems.length];
+        const itemElement = document.createElement('div');
+        itemElement.className = `case-item rarity-${item.rarity}`;
+        itemElement.innerHTML = `
+            <img src="${item.image}" alt="${item.name}">
+            <p>${item.name}</p>
+            <div class="item-price">
+                <img src="ton.png" alt="TON">
+                ${item.price}
+            </div>
+        `;
+        itemElement.dataset.itemId = i % shuffledItems.length;
+        wheelElement.appendChild(itemElement);
+    }
+}
+
+        // Р  Р’ВР  Р вЂ¦Р  РЎвЂР РЋРІР‚ Р  РЎвЂР  Р’В°Р  Р’В»Р  РЎвЂР  Р’В·Р  Р’В°Р РЋРІР‚ Р  РЎвЂР РЋР РЏ Р РЋР С“Р  РЎвЂ”Р  РЎвЂР РЋР С“Р  РЎвЂќР  Р’В° Р  Р вЂ Р  РЎвЂўР  Р’В·Р  РЎВР  РЎвЂўР  Р’В¶Р  Р вЂ¦Р РЋРІР‚в„–Р РЋРІР‚В¦ Р  РЎвЂ”Р РЋР вЂљР  Р’ВµР  РўвЂР  РЎВР  Р’ВµР РЋРІР‚С™Р  РЎвЂўР  Р вЂ 
+        function initializeItemsGrid() {
+            itemsGrid.innerHTML = '';
+            
+            items.forEach(item => {
+                const itemElement = document.createElement('div');
+                itemElement.className = `item-card rarity-${item.rarity}`;
+                itemElement.innerHTML = `
+                    <img src="${item.image}" alt="${item.name}">
+                    <p>${item.name}</p>
+                    <div class="item-card-price">
+                        <img src="ton.png" alt="TON">
+                        ${item.price}
+                    </div>
+                    <div class="rarity-label">${item.rarity.charAt(0).toUpperCase() + item.rarity.slice(1)}</div>
+                `;
+                itemsGrid.appendChild(itemElement);
+            });
+        }
+
+        // Р  РЎСџР  РЎвЂўР  Р’В»Р РЋРЎвЂњР РЋРІР‚РЋР  Р’В°Р  Р’ВµР  РЎВ Р РЋР С“Р  Р’В»Р РЋРЎвЂњР РЋРІР‚РЋР  Р’В°Р  РІвЂћвЂ“Р  Р вЂ¦Р РЋРІР‚в„–Р  РІвЂћвЂ“ Р  РЎвЂ”Р РЋР вЂљР  Р’ВµР  РўвЂР  РЎВР  Р’ВµР РЋРІР‚С™ Р РЋР С“ Р РЋРЎвЂњР РЋРІР‚РЋР  Р’ВµР РЋРІР‚С™Р  РЎвЂўР  РЎВ Р РЋР вЂљР  Р’ВµР  РўвЂР  РЎвЂќР  РЎвЂўР РЋР С“Р РЋРІР‚С™Р  РЎвЂ
+        function getRandomItem() {
+            const weights = demoMode ? demoRarityWeights : normalRarityWeights;
+            const totalWeight = Object.values(weights).reduce((a, b) => a + b, 0);
+            let random = Math.random() * totalWeight;
+            
+            for (const [rarity, weight] of Object.entries(weights)) {
+                if (random < weight) {
+                    const itemsOfRarity = items.filter(item => item.rarity === rarity);
+                    return itemsOfRarity[Math.floor(Math.random() * itemsOfRarity.length)];
+                }
+                random -= weight;
+            }
+            
+            return items[0]; // fallback
+        }
+
+        // Р  РІР‚вЂќР  Р’В°Р  РЎвЂ”Р РЋРЎвЂњР РЋР С“Р  РЎвЂќР  Р’В°Р  Р’ВµР  РЎВ Р РЋР вЂљР РЋРЎвЂњР  Р’В»Р  Р’ВµР РЋРІР‚С™Р  РЎвЂќР РЋРЎвЂњ
+ function spinRoulette(index) {
+    return new Promise((resolve) => {
+        spinButton.disabled = true;
+        const wheel = document.getElementById(`roulette-wheel-${index}`);
+        
+        // Р СџР С•Р В»РЎС“РЎвЂЎР В°Р ВµР С РЎвЂљР ВµР С”РЎС“РЎвЂ°Р С‘Р в„– Р С—Р С•РЎР‚РЎРЏР Т‘Р С•Р С” РЎРЊР В»Р ВµР СР ВµР Р…РЎвЂљР С•Р Р† Р Т‘Р В»РЎРЏ РЎРЊРЎвЂљР С•Р в„– РЎР‚РЎС“Р В»Р ВµРЎвЂљР С”Р С‘
+        const currentItems = currentRouletteItems[index];
+        
+        // Р СџР С•Р В»РЎС“РЎвЂЎР В°Р ВµР С РЎРѓР В»РЎС“РЎвЂЎР В°Р в„–Р Р…РЎвЂ№Р в„– Р С—РЎР‚Р ВµР Т‘Р СР ВµРЎвЂљ Р С‘Р В· РЎвЂљР ВµР С”РЎС“РЎвЂ°Р ВµР С–Р С• Р С—Р С•РЎР‚РЎРЏР Т‘Р С”Р В°
+        const result = getRandomItem();
+        // Р СњР В°РЎвЂ¦Р С•Р Т‘Р С‘Р С Р С‘Р Р…Р Т‘Р ВµР С”РЎРѓ РЎРЊРЎвЂљР С•Р С–Р С• Р С—РЎР‚Р ВµР Т‘Р СР ВµРЎвЂљР В° Р Р† РЎвЂљР ВµР С”РЎС“РЎвЂ°Р ВµР С Р С—Р С•РЎР‚РЎРЏР Т‘Р С”Р Вµ РЎРЊР В»Р ВµР СР ВµР Р…РЎвЂљР С•Р Р†
+        const targetIndex = currentItems.findIndex(item => 
+            item.name === result.name && item.rarity === result.rarity);
+        
+        // Р РЋР В±РЎР‚Р В°РЎРѓРЎвЂ№Р Р†Р В°Р ВµР С Р С—Р С•Р В·Р С‘РЎвЂ Р С‘РЎР‹
+        wheel.style.transition = 'none';
+        wheel.style.transform = 'translateX(0)';
+        
+        setTimeout(() => {
+            const itemWidth = 120;
+            const wheelWidth = wheel.parentElement.offsetWidth;
+            const targetPosition = -((currentItems.length * 10 + targetIndex) * itemWidth) + 
+                (wheelWidth / 2) - (itemWidth / 2);
+            
+            const spinDuration = 10000;
+            
+            wheel.style.transition = 'none';
+            wheel.style.transform = `translateX(${-itemWidth * 10}px)`;
+            
+            setTimeout(() => {
+                wheel.style.transition = `transform ${spinDuration}ms cubic-bezier(0.5, 0, 0.1, 1)`;
+                wheel.style.transform = `translateX(${targetPosition}px)`;
+                
+                setTimeout(() => {
+                    const allItems = wheel.querySelectorAll('.case-item');
+                    allItems.forEach(item => item.classList.remove('selected'));
+                    
+                    const centerPosition = wheel.parentElement.offsetWidth / 2;
+                    let selectedElement = null;
+                    let minDistance = Infinity;
+                    
+                    allItems.forEach(item => {
+                        const rect = item.getBoundingClientRect();
+                        const distance = Math.abs(rect.left + rect.width / 2 - centerPosition);
+                        
+                        if (distance < minDistance) {
+                            minDistance = distance;
+                            selectedElement = item;
+                        }
+                    });
+                    
+                    if (selectedElement) {
+                        selectedElement.classList.add('selected');
+                    }
+                    
+                    // Р вЂќР С•Р В±Р В°Р Р†Р В»РЎРЏР ВµР С РЎР‚Р ВµР В·РЎС“Р В»РЎРЉРЎвЂљР В°РЎвЂљ
+                    const resultElement = document.createElement('div');
+                    resultElement.className = 'result';
+                    resultElement.id = `result-${index}`;
+                    resultElement.innerHTML = `
+                        <div>Case ${index + 1}: <span class="rarity-${result.rarity}">
+                            <img src="${result.image}" alt="${result.name}" style="width:20px;height:20px;vertical-align:middle;">
+                            ${result.name}
+                        </span></div>
+                        <div class="result-price">
+                            <img src="ton.png" alt="TON">
+                            Value: ${result.price} TON
+                        </div>
+                    `;
+                    
+                    if (demoMode) {
+                        resultElement.innerHTML += "<div style='color:var(--secondary-text);font-size:14px;'>(Demo Mode)</div>";
+                    }
+                    
+                    const existingResult = document.getElementById(`result-${index}`);
+                    if (existingResult) {
+                        existingResult.innerHTML = resultElement.innerHTML;
+                    } else {
+                        resultsContainer.appendChild(resultElement);
+                    }
+                    
+                    if (!demoMode) {
+                        const gift = {
+                            ...result,
+                            date: new Date().toLocaleDateString()
+                        };
+                        wonGifts.unshift(gift);
+                        updateGiftsList();
+                    }
+                    spinButton.disabled = false;
+                    resolve(result);
+                }, spinDuration + 50);
+            }, 10);
+        }, 10);
+    });
+}
+
+        // Р  РЎвЂєР  Р’В±Р  Р вЂ¦Р  РЎвЂўР  Р вЂ Р  Р’В»Р РЋР РЏР  Р’ВµР  РЎВ Р РЋР С“Р  РЎвЂ”Р  РЎвЂР РЋР С“Р  РЎвЂўР  РЎвЂќ Р  РЎвЂ”Р  РЎвЂўР  РўвЂР  Р’В°Р РЋР вЂљР  РЎвЂќР  РЎвЂўР  Р вЂ 
+        function updateGiftsList() {
+            if (wonGifts.length === 0) {
+                noGiftsMessage.style.display = 'block';
+                giftsList.innerHTML = '';
+                return;
+            }
+            
+            noGiftsMessage.style.display = 'none';
+            giftsList.innerHTML = '';
+            
+            wonGifts.forEach(gift => {
+                const giftElement = document.createElement('div');
+                giftElement.className = 'gift-item';
+                giftElement.innerHTML = `
+                    <img src="${gift.image}" alt="${gift.name}">
+                    <div class="gift-info">
+                        <div class="gift-name rarity-${gift.rarity}">${gift.name}</div>
+                        <div class="gift-price">
+                            <img src="ton.png" alt="TON">
+                            ${gift.price} TON
+                        </div>
+                        <div class="gift-date">Won on ${gift.date}</div>
+                    </div>
+                `;
+                giftsList.appendChild(giftElement);
+            });
+        }
+        
+
+
+document.addEventListener('DOMContentLoaded', function() {
+  const spinButton = document.getElementById('spin-button');
+  const caseLoadingOverlay = document.getElementById('case-loading-overlay');
+  const caseElement = document.getElementById('case'); // РЎРЊР В»Р ВµР СР ВµР Р…РЎвЂљ Р С”Р ВµР в„–РЎРѓР В°, Р С”Р С•РЎвЂљР С•РЎР‚РЎвЂ№Р в„– Р С”РЎР‚РЎС“РЎвЂљР С‘РЎвЂљРЎРѓРЎРЏ
+
+  spinButton.addEventListener('click', function() {
+    // Р СџР С•Р С”Р В°Р В·РЎвЂ№Р Р†Р В°Р ВµР С Р В»Р С•Р В°Р Т‘Р ВµРЎР‚
+    caseLoadingOverlay.classList.add('active');
+    spinButton.disabled = true;
+
+    setTimeout(() => {
+      // Р РЋР С”РЎР‚РЎвЂ№Р Р†Р В°Р ВµР С Р В»Р С•Р В°Р Т‘Р ВµРЎР‚
+      caseLoadingOverlay.classList.remove('active');
+     // spinButton.disabled = false;
+
+      // Р вЂ”Р В°Р С—РЎС“РЎРѓР С”Р В°Р ВµР С Р В°Р Р…Р С‘Р СР В°РЎвЂ Р С‘РЎР‹ Р С”Р ВµР в„–РЎРѓР В°
+      openCase();
+    }, 2000);
+  });
+
+  function openCase() {
+    // Р вЂќР С•Р В±Р В°Р Р†Р В»РЎРЏР ВµР С Р С”Р В»Р В°РЎРѓРЎРѓ, Р С”Р С•РЎвЂљР С•РЎР‚РЎвЂ№Р в„– Р В·Р В°Р С—РЎС“РЎРѓР С”Р В°Р ВµРЎвЂљ Р В°Р Р…Р С‘Р СР В°РЎвЂ Р С‘РЎР‹ Р Р†РЎР‚Р В°РЎвЂ°Р ВµР Р…Р С‘РЎРЏ Р С”Р ВµР в„–РЎРѓР В°
+    caseElement.classList.add('spin-animation');
+
+    // Р СљР С•Р В¶Р Р…Р С• Р Т‘Р С•Р В±Р В°Р Р†Р С‘РЎвЂљРЎРЉ Р С•Р В±РЎР‚Р В°Р В±Р С•РЎвЂљРЎвЂЎР С‘Р С” РЎРѓР С•Р В±РЎвЂ№РЎвЂљР С‘РЎРЏ Р С•Р С”Р С•Р Р…РЎвЂЎР В°Р Р…Р С‘РЎРЏ Р В°Р Р…Р С‘Р СР В°РЎвЂ Р С‘Р С‘, Р ВµРЎРѓР В»Р С‘ Р Р…РЎС“Р В¶Р Р…Р С•
+    caseElement.addEventListener('animationend', () => {
+      // Р вЂќР ВµР в„–РЎРѓРЎвЂљР Р†Р С‘РЎРЏ Р С—Р С•РЎРѓР В»Р Вµ Р С•Р С”Р С•Р Р…РЎвЂЎР В°Р Р…Р С‘РЎРЏ Р В°Р Р…Р С‘Р СР В°РЎвЂ Р С‘Р С‘, Р Р…Р В°Р С—РЎР‚Р С‘Р СР ВµРЎР‚ Р С—Р С•Р С”Р В°Р В·Р В°РЎвЂљРЎРЉ РЎР‚Р ВµР В·РЎС“Р В»РЎРЉРЎвЂљР В°РЎвЂљ
+      const resultsContainer = document.getElementById('results-container');
+      resultsContainer.innerHTML = '<div class="result">Р С™Р ВµР в„–РЎРѓ Р С•РЎвЂљР С”РЎР‚РЎвЂ№РЎвЂљ!</div>';
+
+      // Р Р€Р В±Р С‘РЎР‚Р В°Р ВµР С Р С”Р В»Р В°РЎРѓРЎРѓ Р В°Р Р…Р С‘Р СР В°РЎвЂ Р С‘Р С‘, Р ВµРЎРѓР В»Р С‘ Р Р…РЎС“Р В¶Р Р…Р С• Р С—Р С•Р Р†РЎвЂљР С•РЎР‚Р Р…Р С• Р В·Р В°Р С—РЎС“РЎРѓР С”Р В°РЎвЂљРЎРЉ Р В°Р Р…Р С‘Р СР В°РЎвЂ Р С‘РЎР‹
+      caseElement.classList.remove('spin-animation');
+    }, { once: true });
+  }
+});
+
+
+
+
+
+        // Р  РЎвЂєР  Р’В±Р РЋР вЂљР  Р’В°Р  Р’В±Р  РЎвЂўР РЋРІР‚С™Р РЋРІР‚РЋР  РЎвЂР  РЎвЂќ Р  РЎвЂќР  Р’В»Р  РЎвЂР  РЎвЂќР  Р’В° Р  Р вЂ¦Р  Р’В° Р  РЎвЂќР  Р вЂ¦Р  РЎвЂўР  РЎвЂ”Р  РЎвЂќР РЋРЎвЂњ Р  Р вЂ Р РЋРІР‚в„–Р  Р’В±Р  РЎвЂўР РЋР вЂљР  Р’В° Р  РЎвЂќР  РЎвЂўР  Р’В»Р  РЎвЂР РЋРІР‚РЋР  Р’ВµР РЋР С“Р РЋРІР‚С™Р  Р вЂ Р  Р’В° Р  РЎвЂќР  Р’ВµР  РІвЂћвЂ“Р РЋР С“Р  РЎвЂўР  Р вЂ 
+        caseCountButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                caseCount = parseInt(button.dataset.count);
+                caseCountButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                updateCasePrice();
+                initializeRoulettes();
+            });
+        });
+
+        // Р  РЎвЂєР  Р’В±Р РЋР вЂљР  Р’В°Р  Р’В±Р  РЎвЂўР РЋРІР‚С™Р РЋРІР‚РЋР  РЎвЂР  РЎвЂќ Р  РЎвЂ”Р  Р’ВµР РЋР вЂљР  Р’ВµР  РЎвЂќР  Р’В»Р РЋР вЂ№Р РЋРІР‚РЋР  Р’В°Р РЋРІР‚С™Р  Р’ВµР  Р’В»Р РЋР РЏ Р  РўвЂР  Р’ВµР  РЎВР  РЎвЂў-Р РЋР вЂљР  Р’ВµР  Р’В¶Р  РЎвЂР  РЎВР  Р’В°
+        demoModeSwitch.addEventListener('change', function() {
+            demoMode = this.checked;
+            initializeRoulettes();
+        });
+
+        // Р  РЎвЂєР  Р’В±Р РЋР вЂљР  Р’В°Р  Р’В±Р  РЎвЂўР РЋРІР‚С™Р РЋРІР‚РЋР  РЎвЂР  РЎвЂќ Р  РЎвЂќР  Р вЂ¦Р  РЎвЂўР  РЎвЂ”Р  РЎвЂќР  РЎвЂ Р  Р’В·Р  Р’В°Р  РЎвЂ”Р РЋРЎвЂњР РЋР С“Р  РЎвЂќР  Р’В°
+// Глобальная переменная для баланса
+let userBalance = 0; // Начальный баланс
+
+// Функция обновления отображения баланса
+function updateBalanceDisplay() {
+    const balanceContainer = document.getElementById('site-balance');
+    balanceContainer.innerHTML = `
+        <span>${userBalance.toFixed(2)}</span>
+        <img class="ton-icon" src="ton.png" alt="TON" />
+    `;
+}
+
+// Функция обновления цены кейса
+function updateCasePrice() {
+    const priceElement = document.getElementById('case-price');
+    if (demoMode) {
+        priceElement.textContent = '1.5';
+        document.getElementById('spin-button').classList.add('free-case');
+    } else {
+        priceElement.textContent = '1.5';
+        document.getElementById('spin-button').classList.remove('free-case');
+    }
+}
+
+// Обработчик кнопки открытия кейса
+spinButton.addEventListener('click', async function() {
+    if (isSpinning) return;
+    
+    // В демо-режиме открываем сразу
+    if (demoMode) {
+        isSpinning = true;
+        spinButton.disabled = true;
+        resultsContainer.innerHTML = '';
+
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        const spinPromises = [];
+        for (let i = 0; i < caseCount; i++) {
+            spinPromises.push(spinRoulette(i));
+        }
+        
+        await Promise.all(spinPromises);
+        
+        spinButton.disabled = false;
+        isSpinning = false;
+        return;
+    }
+    
+    // В нормальном режиме проверяем баланс с учетом количества кейсов
+    const CASE_PRICE_PER_ITEM = 1.5;
+    const totalPrice = CASE_PRICE_PER_ITEM * caseCount;
+    
+    if (userBalance < totalPrice) {
+        alert(`Not enough balance! You need ${totalPrice.toFixed(2)} TON to open ${caseCount} cases.`);
+        return;
+    }
+    
+    // Списываем полную сумму
+    userBalance -= totalPrice;
+    updateBalanceDisplay();
+        // Сохраняем в базу данных
+    fetch('http://localhost:5000/update_balance', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            user_id: userId,
+            balance: userBalance
+        })
+    }).then(res => res.json()).then(data => {
+        console.log('Balance updated:', data);
+    }).catch(err => {
+        console.error('Balance update failed:', err);
+    });
+
+    
+    // Показываем прелоадер
+    document.getElementById('case-loading-overlay').classList.add('active');
+    
+    // Имитируем загрузку
+    setTimeout(() => {
+        document.getElementById('case-loading-overlay').classList.remove('active');
+        
+        // Запускаем рулетку
+        isSpinning = true;
+        spinButton.disabled = true;
+        resultsContainer.innerHTML = '';
+
+        setTimeout(async () => {
+            const spinPromises = [];
+            for (let i = 0; i < caseCount; i++) {
+                spinPromises.push(spinRoulette(i));
+            }
+            
+            await Promise.all(spinPromises);
+            
+            spinButton.disabled = false;
+            isSpinning = false;
+        }, 100);
+    }, 1500);
+});
+
+   
+
+
+        // Р  РЎвЂєР  Р’В±Р РЋР вЂљР  Р’В°Р  Р’В±Р  РЎвЂўР РЋРІР‚С™Р РЋРІР‚РЋР  РЎвЂР  РЎвЂќР  РЎвЂ Р  РЎвЂ”Р  Р’ВµР РЋР вЂљР  Р’ВµР  РЎвЂќР  Р’В»Р РЋР вЂ№Р РЋРІР‚РЋР  Р’ВµР  Р вЂ¦Р  РЎвЂР РЋР РЏ Р  Р вЂ Р  РЎвЂќР  Р’В»Р  Р’В°Р  РўвЂР  РЎвЂўР  РЎвЂќ
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Р  Р в‚¬Р  Р’В±Р  РЎвЂР РЋР вЂљР  Р’В°Р  Р’ВµР  РЎВ Р  Р’В°Р  РЎвЂќР РЋРІР‚С™Р  РЎвЂР  Р вЂ Р  Р вЂ¦Р РЋРІР‚в„–Р  РІвЂћвЂ“ Р  РЎвЂќР  Р’В»Р  Р’В°Р РЋР С“Р РЋР С“ Р РЋРЎвЂњ Р  Р вЂ Р РЋР С“Р  Р’ВµР РЋРІР‚В¦ Р  Р вЂ Р  РЎвЂќР  Р’В»Р  Р’В°Р  РўвЂР  РЎвЂўР  РЎвЂќ
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                // Р  РІР‚СњР  РЎвЂўР  Р’В±Р  Р’В°Р  Р вЂ Р  Р’В»Р РЋР РЏР  Р’ВµР  РЎВ Р  Р’В°Р  РЎвЂќР РЋРІР‚С™Р  РЎвЂР  Р вЂ Р  Р вЂ¦Р РЋРІР‚в„–Р  РІвЂћвЂ“ Р  РЎвЂќР  Р’В»Р  Р’В°Р РЋР С“Р РЋР С“ Р РЋРІР‚С™Р  Р’ВµР  РЎвЂќР РЋРЎвЂњР РЋРІР‚В°Р  Р’ВµР  РІвЂћвЂ“ Р  Р вЂ Р  РЎвЂќР  Р’В»Р  Р’В°Р  РўвЂР  РЎвЂќР  Р’Вµ
+                this.classList.add('active');
+                const tabId = this.dataset.tab;
+                document.getElementById(tabId).classList.add('active');
+            });
+        });
+
+        // Р  Р’ВР  Р вЂ¦Р  РЎвЂР РЋРІР‚ Р  РЎвЂР  Р’В°Р  Р’В»Р  РЎвЂР  Р’В·Р  Р’В°Р РЋРІР‚ Р  РЎвЂР РЋР РЏ Р  РЎвЂ”Р РЋР вЂљР  РЎвЂ Р  Р’В·Р  Р’В°Р  РЎвЂ“Р РЋР вЂљР РЋРЎвЂњР  Р’В·Р  РЎвЂќР  Р’Вµ
+window.onload = function() {
+    
+    // РџРѕРєР°Р·С‹РІР°РµРј РґР°РЅРЅС‹Рµ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ РІ РјРёРЅРё-РїСЂРѕС„РёР»Рµ
+// РћР±РЅРѕРІРёС‚Рµ РєРѕРґ РёРЅРёС†РёР°Р»РёР·Р°С†РёРё РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ (РІРЅСѓС‚СЂРё window.onload)
+// РџРѕСЃР»Рµ СЃС‚СЂРѕРє, РіРґРµ РІС‹ РїРѕР»СѓС‡Р°РµС‚Рµ РґР°РЅРЅС‹Рµ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ, РґРѕР±Р°РІСЊС‚Рµ:
+document.getElementById('header-user-avatar').src = photoUrl;
+document.getElementById('header-user-name').textContent = fullName;
+
+// Р—РґРµСЃСЊ РІС‹ РјРѕР¶РµС‚Рµ СѓСЃС‚Р°РЅРѕРІРёС‚СЊ Р±Р°Р»Р°РЅСЃ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ (РїСЂРёРјРµСЂ)
+
+// Р•СЃР»Рё РІС‹ С…РѕС‚РёС‚Рµ СЃРєСЂС‹С‚СЊ РѕСЂРёРіРёРЅР°Р»СЊРЅС‹Р№ subtitle СЃ @case1gift_bot, РґРѕР±Р°РІСЊС‚Рµ:
+    
+    // РћСЃС‚Р°Р»СЊРЅРѕР№ СЃСѓС‰РµСЃС‚РІСѓСЋС‰РёР№ РєРѕРґ...
+    userAvatar.src = photoUrl;
+    userName.textContent = fullName;
+    userIdElement.textContent = username || `ID: ${userId}`;
+    
+    // Р Р°Р·РІРµСЂРЅСѓС‚СЊ РїСЂРёР»РѕР¶РµРЅРёРµ РЅР° РІРµСЃСЊ СЌРєСЂР°РЅ
+    tg.expand();
+    
+    initializeRoulettes();
+    initializeItemsGrid();
+    updateGiftsList();
+    
+    // Р—Р°РїСЂРµС‰Р°РµРј РјР°СЃС€С‚Р°Р±РёСЂРѕРІР°РЅРёРµ
+    document.addEventListener('gesturestart', function(e) {
+        e.preventDefault();
+    });
+    
+    // Р—Р°РїСЂРµС‰Р°РµРј РґРІРѕР№РЅРѕР№ С‚Р°Рї РґР»СЏ РјР°СЃС€С‚Р°Р±РёСЂРѕРІР°РЅРёСЏ
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', function(event) {
+        const now = (new Date()).getTime();
+        if (now - lastTouchEnd <= 300) {
+            event.preventDefault();
+        }
+        lastTouchEnd = now;
+    }, false);
+};
+
+window.addEventListener('DOMContentLoaded', function() {
+  setTimeout(function() {
+    const preloader = document.getElementById('preloader');
+    preloader.classList.add('hide');
+    setTimeout(() => preloader.remove(), 700); // Р Р€Р Т‘Р В°Р В»Р С‘РЎвЂљРЎРЉ Р С‘Р В· DOM Р С—Р С•РЎРѓР В»Р Вµ Р В°Р Р…Р С‘Р СР В°РЎвЂ Р С‘Р С‘
+  }, 3000);
+});
+
+    </script>
+    <div id="case-loading-overlay">
+  <div class="case-loading-content">
+    <div class="case-loading-spinner"></div>
+    <div class="case-loading-text">Getting a request</div>
+  </div>
+</div>
+
+</body>
+</html>
