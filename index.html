@@ -1619,10 +1619,74 @@ spinButton.addEventListener('click', async function() {
     const CASE_PRICE_PER_ITEM = 1.5;
     const totalPrice = CASE_PRICE_PER_ITEM * caseCount;
     
-    if (userBalance < totalPrice) {
-        alert(`Not enough balance! You need ${totalPrice.toFixed(2)} TON to open ${caseCount} cases.`);
-        return;
-    }
+if (userBalance < totalPrice) {
+    // Создаем модальное окно
+    const modal = document.createElement('div');
+    modal.style.position = 'fixed';
+    modal.style.top = '0';
+    modal.style.left = '0';
+    modal.style.width = '100%';
+    modal.style.height = '100%';
+    modal.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+    modal.style.display = 'flex';
+    modal.style.justifyContent = 'center';
+    modal.style.alignItems = 'center';
+    modal.style.zIndex = '1000';
+    
+    // Создаем контент модального окна
+    const modalContent = document.createElement('div');
+    modalContent.style.backgroundColor = '#2c2c2c';
+    modalContent.style.padding = '30px';
+    modalContent.style.borderRadius = '12px';
+    modalContent.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.3)';
+    modalContent.style.maxWidth = '400px';
+    modalContent.style.width = '90%';
+    modalContent.style.textAlign = 'center';
+    modalContent.style.border = '1px solid #444';
+    
+    // Текст сообщения
+    const message = document.createElement('h3');
+    message.textContent = 'Not enough balance!';
+    message.style.color = '#ff6b6b';
+    message.style.marginBottom = '15px';
+    message.style.fontSize = '20px';
+    
+    // Дополнительный текст
+    const details = document.createElement('p');
+    details.textContent = `You need ${totalPrice.toFixed(2)} TON to open ${caseCount} cases.`;
+    details.style.color = '#ccc';
+    details.style.marginBottom = '20px';
+    
+    // Кнопка закрытия
+    const closeButton = document.createElement('button');
+    closeButton.textContent = 'OK';
+    closeButton.style.backgroundColor = '#ff6b6b';
+    closeButton.style.color = 'white';
+    closeButton.style.border = 'none';
+    closeButton.style.padding = '10px 20px';
+    closeButton.style.borderRadius = '6px';
+    closeButton.style.cursor = 'pointer';
+    closeButton.style.fontWeight = 'bold';
+    closeButton.style.transition = 'background-color 0.2s';
+    
+    // Эффект при наведении на кнопку
+    closeButton.onmouseover = () => closeButton.style.backgroundColor = '#ff5252';
+    closeButton.onmouseout = () => closeButton.style.backgroundColor = '#ff6b6b';
+    
+    // Закрытие модального окна
+    closeButton.onclick = () => document.body.removeChild(modal);
+    
+    // Собираем модальное окно
+    modalContent.appendChild(message);
+    modalContent.appendChild(details);
+    modalContent.appendChild(closeButton);
+    modal.appendChild(modalContent);
+    
+    // Добавляем модальное окно на страницу
+    document.body.appendChild(modal);
+    
+    return;
+}
     
     // Списываем полную сумму
     userBalance -= totalPrice;
